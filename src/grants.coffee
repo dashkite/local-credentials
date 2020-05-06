@@ -7,34 +7,17 @@ import Confidential from "./confidential"
 
 class Grants
 
-  constructor: (@directory) ->
+  constructor: ({@directory, @keyPairs}) ->
 
   exercise: (request) -> Grants.exercise @, request
+
   add: (directory) -> Grants.add @, directory
 
-  store: -> Grants.store @
+  receive: (key, ciphertext) -> Grants.receive @, key, ciphertext
 
-  @store: tee (grants) ->
-    if grants.directory?
-      @cached = grants
-      Local.store "directory", await @encrypt grants.directory
+  @toObject: tee (grants) -> @directory
 
-  @load: -> @cached ?= new Grants @decrypt Local.load "directory"
-
-  @decrypt: (text) ->
-     try
-      encryptedDirectory = Envelope.from "base64", text
-      encryptionKey = SharedKey.create Profile.load().keyPairs.encryption
-      message = decrypt encryptionKey, encryptedDirectory
-      Directory.from "bytes", message.to "bytes"
-    catch error
-      console.warn "Missing or corrupted grants dictionary."
-
-  @encrypt: (directory) ->
-    sharedKey = SharedKey.create Profile.load().keyPairs.encryption
-    encryptedDirectory = await encrypt sharedKey,
-      Message.from "bytes", directory.to "bytes"
-    encryptedDirectory.to "base64"
+  @fromObject: (object) -> new Grants object
 
   @add: tee (grants, directory) ->
     if grants.directory?
@@ -46,16 +29,17 @@ class Grants
       grants.directory = directory
     grants.store()
 
-  @recieve: (key, text) ->
-    key = SharedKey.create (PublicKey.from "base64", key),
-      (Profile.load().keyPairs.encryption.privateKey)
-    Directory.from "bytes",
-      (decrypt sharedKey, Envelope.from "base64", text).to "bytes"
+  @receive: (grants, publicKey, ciphertext) ->
+    key = SharedKey.create (PublicKey.from "base64", publicKey),
+      grants.keyPairs.encryption.privateKey
+    directory = Directory.from "bytes",
+      (decrypt sharedKey, Envelope.from "base64", ciphertext).to "bytes"
+    @add grants, directory
 
-  @exercise: ({directory}, {path, parameters, method}) ->
+  @exercise: ({directory, keyPairs}, {path, parameters, method}) ->
     if directory? && (bundle = lookup directory, path, parameters)?
       {grant, useKeyPairs} = bundle[method.toUpperCase()]
-      assertion = exercise (Profile.load().keyPairs.signature),
+      assertion = exercise keyPairs.signature,
         useKeyPairs, grant, url: parameters
       assertion.to "base64"
 

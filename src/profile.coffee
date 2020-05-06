@@ -5,28 +5,23 @@ import Confidential from "./confidential"
 
 class Profile
 
-  constructor: ({@data = {}, @keyPairs}) ->
+  constructor: ({@data = {}, @keyPairs, @grants}) ->
 
-  store: -> Profile.store @
+  @fromSerialazableObject: (object) ->
+    {data, keyPairs, grants} = profile
+    new Profile
+      data: data
+      grants: Grants.fromObject {grants, keyPairs}
+      keyPairs:
+        encryption: EncryptionKeyPair.from "base64", keyPairs.encryption
+        signature: SignatureKeyPair.from "base64", keyPairs.signature
 
-  @load: ->
-    @cached ?= do ->
-      if (profile =  JSON.parse Local.load "profile")?
-        {data, keyPairs} = profile
-        new Profile
-          data: data
-          keyPairs:
-            encryption: EncryptionKeyPair.from "base64", keyPairs.encryption
-            signature: SignatureKeyPair.from "base64", keyPairs.signature
-
-  @exists: -> @load()?
-
-  @store: tee (profile) ->
-    @cached = profile
-    {keyPairs, data} = profile
+  @toSerializableObject: tee (profile) ->
+    {keyPairs, data, grants} = profile
     Local.store "profile",
       JSON.stringify
         data: data
+        grants: Grants.toObject grants
         keyPairs:
           encryption: keyPairs.encryption.to "base64"
           signature: keyPairs.signature.to "base64"

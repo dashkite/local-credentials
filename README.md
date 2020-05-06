@@ -4,30 +4,36 @@ _Manage profile and Web capabilities using Local Storage._
 
 ## Scenarios
 
+#### List All Profiles
+
+If you want to allow for multiple identities, you’ll need a way to list the choices.
+
+```coffeescript
+Profiles.get()
+```
+
 #### Create A New Profile
 
 ```coffeescript
-Profile.create nickname: "alice"
+alice = Profiles.create nickname: "alice"
 ```
 
-#### Load A Profile
+#### Get Current Profile
 
 ```coffeescript
-alice = Profile.load()
+alice = Profiles.current
 ```
 
-#### Check To See If A Profile Has Been Defined
+#### Set Current Profile
 
 ```coffeescript
-if !Profile.exists()
-  browse "register"
+Profiles.current = alice
 ```
 
 #### Update And Store A Profile
 
 ```coffeescript
-profile.data.nickname = "bob"
-profile.store()
+profile.update -> @data.nickname = "bob"
 ```
 
 #### Add Grants To The Grants Directory
@@ -35,58 +41,47 @@ profile.store()
 The `key` and `data` variables are the sender’s public encryption key and the ciphertext of the grants.
 
 ```coffeescript
-grants = Grants.load()
-directory = Grants.receieve key, ciphertext 
-grants.add directory
+grants = Profiles.current.grants
+directory = grants.receive key, data
 ```
 
-> **Important ▸ **The grants directory will automatically initialize itself the first time its referenced.
+> **Important ▸ ** The grants directory will automatically initialize itself the first time its referenced.
 
 #### Exercise A Grant For Use With A Request
 
 ```coffeescript
-grants = Grants.load()
+grants = Profile.current.grants
 authorization = grants.exercise request
 ```
 
 ## API
 
-### Profile
+### Profiles
 
-#### *Profile.create data ⇢ profile*
+#### *Profiles.create data ⇢ profile*
 
 Creates a profile with the given data and stores it in LocalStorage. Automatically generates encryption and signature keypairs for use with the profile. Returns a promise for the profile.
 
-#### *Profile.load → profile*
+#### *Profiles.get ⇢ profiles*
 
-Loads profile from LocalStorage. Returns `undefined` if no profile is stored.
+Returns a promise for all profiles, loading them from LocalStorage if necessary. Resolves to `undefined` if no profiles have been stored.
 
-#### *Profile.exists → boolean*
+#### *Profile.current*
 
-Returns true if a profile is stored locally.
+References the current profile. Implicitly loads profiles if they haven’t already been loaded.
 
-#### *Profile.store profile → profile*
-
-Stores profile in LocalStorage. Useful for storing a profile after updating it.
-
-```coffeescript
-profile.data.nickname = "alice"
-Profile.store profile
-```
+### Profile
 
 #### *store → profile*
 
-Convenience method for Profile.store.
+Stores a profile. Call `store` after making a change to a profile.
+
+```coffeescript
+profile.data.nickname = "alice"
+profile.store()
+```
 
 ### Grants
-
-#### *Grants.load → grants*
-
-Loads grants from LocalStorage.
-
-#### *Grants.store ⇢ grants*
-
-Stores grants in LocalStorage. Returns a promise for the stored grants.
 
 #### *Grants.exercise grants, request → assertion*
 
@@ -96,15 +91,7 @@ Does a lookup for a grant suitable for the given request. If found, the grant is
 
 Adds new grants to grants and stores them in LocalStorage. Returns a promise for the updated grants.
 
-#### *Grants.encrypt directory ⇢ base64*
-
-Encrypts the directory of grants using the profile encryption key pair. Returns a promise for the encrypted directory as base64 ciphertext.
-
-#### *Grants.decrypt base64 → directory*
-
-Decrypts a directory of grants from base64 ciphertext using the Profile key pairs.
-
-#### *Grants.receive key, base64 → directory*
+#### *Grants.receive grants, key, ciphertext → directory*
 
 Decrypts a directory of grants from base64 ciphertext using the given base64 encoded sender public encryption key.
 
@@ -112,7 +99,7 @@ Decrypts a directory of grants from base64 ciphertext using the given base64 enc
 
 Convenience method for Grants.store.
 
-#### *add directory ⇢ grants*
+#### *receive key, ciphertext ⇢ grants*
 
 Convenience method for Grants.add.
 

@@ -107,3 +107,15 @@ Decrypts a directory of grants from base64 ciphertext using the Profile key pair
 #### *Grants.receive key, base64 → directory*
 
 Decrypts a directory of grants from base64 ciphertext using the given base64 encoded sender public encryption key.
+
+#### *store ⇢ grants*
+
+Convenience method for Grants.store.
+
+#### *add directory ⇢ grants*
+
+Convenience method for Grants.add.
+
+#### *exercise request → authorization*
+
+Convenience method for Grants.exercise.

@@ -5,11 +5,7 @@ import Confidential from "./confidential"
 
 class Profile
 
-  constructor: ({@data, @keyPairs}) ->
-    @data ?= {}
-    @keyPairs ?=
-      encryption: await EncryptionKeyPair.create()
-      signature: await SignatureKeyPair.create()
+  constructor: ({@data = {}, @keyPairs}) ->
 
   store: -> Profile.store @
 
@@ -24,7 +20,7 @@ class Profile
             signature: SignatureKeyPair.from "base64", keyPairs.signature
 
   @exists: -> @load()?
-  
+
   @store: tee (profile) ->
     @cached = profile
     {keyPairs, data} = profile
@@ -35,6 +31,11 @@ class Profile
           encryption: keyPairs.encryption.to "base64"
           signature: keyPairs.signature.to "base64"
 
-  @create: (data) -> Profile.store new Profile {data}
+  @create: (data) ->
+    Profile.store new Profile
+      data: data
+      keyPairs:
+        encryption: await EncryptionKeyPair.create()
+        signature: await SignatureKeyPair.create()
 
 export default Profile

@@ -53,9 +53,9 @@ authorization = grants.exercise request
 
 ### Profile
 
-#### *Profile.create data → profile*
+#### *Profile.create data ⇢ profile*
 
-Creates a profile with the given data and stores it in LocalStorage. Automatically generates encryption and signature keypairs for use with the profile.
+Creates a profile with the given data and stores it in LocalStorage. Automatically generates encryption and signature keypairs for use with the profile. Returns a promise for the profile.
 
 #### *Profile.load → profile*
 
@@ -84,21 +84,21 @@ Convenience method for Profile.store.
 
 Loads grants from LocalStorage.
 
-#### *Grants.store → grants*
+#### *Grants.store ⇢ grants*
 
-Stores grants in LocalStorage.
+Stores grants in LocalStorage. Returns a promise for the stored grants.
 
 #### *Grants.exercise grants, request → assertion*
 
 Does a lookup for a grant suitable for the given request. If found, the grant is signed using the Profile signature key pair. Returns the signed grant. The request argument must provide `path`, `parameters`, and `method` properties.
 
-#### *Grants.add grants, directory → grants*
+#### *Grants.add grants, directory ⇢ grants*
 
-Adds new grants to grants and stores them in LocalStorage.
+Adds new grants to grants and stores them in LocalStorage. Returns a promise for the updated grants.
 
-#### *Grants.encrypt directory → base64*
+#### *Grants.encrypt directory ⇢ base64*
 
-Encrypts the directory of grants using the profile encryption key pair. Returns encrypted directory as base64 ciphertext.
+Encrypts the directory of grants using the profile encryption key pair. Returns a promise for the encrypted directory as base64 ciphertext.
 
 #### *Grants.decrypt base64 → directory*
 

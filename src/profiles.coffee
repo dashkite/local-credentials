@@ -19,17 +19,19 @@ class Profile
   @toObject: (profile) ->
     {keyPairs, data, grants} = profile
     data: data
-    grants: Grants.toObject grants if grants?
+    grants: Grants.toObject grants
     keyPairs:
       encryption: keyPairs.encryption.to "base64"
       signature: keyPairs.signature.to "base64"
 
   @create: (data) ->
+    keyPairs =
+      encryption: await EncryptionKeyPair.create()
+      signature: await SignatureKeyPair.create()
     new Profile
       data: data
-      keyPairs:
-        encryption: await EncryptionKeyPair.create()
-        signature: await SignatureKeyPair.create()
+      grants: Grants.create {keyPairs}
+      keyPairs: keyPairs
 
   @update: (profile, handler) ->
     await handler.call profile
@@ -46,7 +48,7 @@ Profiles =
   create: (data) ->
     profile = await Profile.create data
     (@_profiles ?= []).push profile
-    @store()
+    @commit()
     profile
 
   commit: -> if @profiles? then @store @profiles
@@ -73,10 +75,11 @@ properties Profiles,
             return profile if profile.current == true
           # we should never reach here
           throw "local-credentials: no current profile"
+
     set: (profile) ->
       profile.current = true
       @_current = profile
-      @store()
+      @commit()
       profile
 
 

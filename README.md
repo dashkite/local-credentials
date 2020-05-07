@@ -9,19 +9,19 @@ _Manage profile and Web capabilities using Local Storage._
 If you want to allow for multiple identities, you’ll need a way to list the choices.
 
 ```coffeescript
-Profiles.get()
+Profiles.all
 ```
 
 #### Create A New Profile
 
 ```coffeescript
-alice = Profiles.create nickname: "alice"
+alice = await Profiles.create nickname: "alice"
 ```
 
 #### Get Current Profile
 
 ```coffeescript
-alice = Profiles.current
+Profiles.current
 ```
 
 #### Set Current Profile
@@ -45,8 +45,6 @@ grants = Profiles.current.grants
 directory = grants.receive key, data
 ```
 
-> **Important ▸ ** The grants directory will automatically initialize itself the first time its referenced.
-
 #### Exercise A Grant For Use With A Request
 
 ```coffeescript
@@ -62,24 +60,17 @@ authorization = grants.exercise request
 
 Creates a profile with the given data and stores it in LocalStorage. Automatically generates encryption and signature keypairs for use with the profile. Returns a promise for the profile.
 
-#### *Profiles.get ⇢ profiles*
+#### *Profiles.commit → undefined*
 
-Returns a promise for all profiles, loading them from LocalStorage if necessary. Resolves to `undefined` if no profiles have been stored.
+Writes profiels to LocalStorage. You won’t typically need to call this directly.
+
+#### *Profiles.all*
+
+Reference an array of all profiles. Implicitly loads them from LocalStorage if necessary.
 
 #### *Profile.current*
 
 References the current profile. Implicitly loads profiles if they haven’t already been loaded.
-
-### Profile
-
-#### *store → profile*
-
-Stores a profile. Call `store` after making a change to a profile.
-
-```coffeescript
-profile.data.nickname = "alice"
-profile.store()
-```
 
 ### Grants
 

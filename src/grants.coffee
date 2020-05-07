@@ -15,7 +15,9 @@ class Grants
 
   receive: (key, ciphertext) -> Grants.receive @, key, ciphertext
 
-  @toObject: tee (grants) -> @directory
+  @create: (object) -> new Grants object
+
+  @toObject: (grants) -> @directory
 
   @fromObject: (object) -> new Grants object
 
@@ -27,10 +29,9 @@ class Grants
           grants.directory[template][method] = entry
     else
       grants.directory = directory
-    grants.store()
 
   @receive: (grants, publicKey, ciphertext) ->
-    key = SharedKey.create (PublicKey.from "base64", publicKey),
+    sharedKey = SharedKey.create (PublicKey.from "base64", publicKey),
       grants.keyPairs.encryption.privateKey
     directory = Directory.from "bytes",
       (decrypt sharedKey, Envelope.from "base64", ciphertext).to "bytes"
@@ -38,9 +39,10 @@ class Grants
 
   @exercise: ({directory, keyPairs}, {path, parameters, method}) ->
     if directory? && (bundle = lookup directory, path, parameters)?
-      {grant, useKeyPairs} = bundle[method.toUpperCase()]
-      assertion = exercise keyPairs.signature,
-        useKeyPairs, grant, url: parameters
-      assertion.to "base64"
+      if (_capability = bundle[method.toUpperCase()])?
+        {grant, useKeyPairs} = _capability
+        assertion = exercise keyPairs.signature,
+          useKeyPairs, grant, url: parameters
+        assertion.to "base64"
 
 export default Grants

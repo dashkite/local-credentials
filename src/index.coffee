@@ -1,2 +1,1 @@
-export Profile from "./profile"
-export Grants from "./grants"
+export {default} from "./profiles"

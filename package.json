@@ -1,7 +1,7 @@
 {
   "name": "@dashkite/local-credentials",
-  "version": "1.0.0",
-  "description": "_Manage profile and Web capabilities using Local Storage._",
+  "version": "0.0.0",
+  "description": "Manage profile and Web capabilities using Local Storage.",
   "keywords": [],
   "homepage": "https://github.com/dashkite/local-credentials#readme",
   "bugs": {
@@ -30,8 +30,8 @@
   },
   "devDependencies": {
     "amen": "^3.0.0",
+    "dom-storage": "^2.1.0",
     "panda-9000": "^5.0.2",
-    "panda-builder": "^4.0.13",
-    "puppeteer": "^3.0.3"
+    "panda-builder": "^4.0.13"
   }
 }

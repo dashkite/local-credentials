@@ -1,5 +1,6 @@
 import {tee} from "panda-garden"
 import Confidential from "./confidential"
+import Grants from "./grants"
 
 {EncryptionKeyPair, SignatureKeyPair} = Confidential
 
@@ -7,7 +8,7 @@ class Profile
 
   constructor: ({@data = {}, @keyPairs, @grants}) ->
 
-  @fromSerialazableObject: (object) ->
+  @fromObject: (object) ->
     {data, keyPairs, grants} = profile
     new Profile
       data: data
@@ -16,18 +17,16 @@ class Profile
         encryption: EncryptionKeyPair.from "base64", keyPairs.encryption
         signature: SignatureKeyPair.from "base64", keyPairs.signature
 
-  @toSerializableObject: tee (profile) ->
+  @toObject: tee (profile) ->
     {keyPairs, data, grants} = profile
-    Local.store "profile",
-      JSON.stringify
-        data: data
-        grants: Grants.toObject grants
-        keyPairs:
-          encryption: keyPairs.encryption.to "base64"
-          signature: keyPairs.signature.to "base64"
+    data: data
+    grants: Grants.toObject grants if grants?
+    keyPairs:
+      encryption: keyPairs.encryption.to "base64"
+      signature: keyPairs.signature.to "base64"
 
   @create: (data) ->
-    Profile.store new Profile
+    new Profile
       data: data
       keyPairs:
         encryption: await EncryptionKeyPair.create()

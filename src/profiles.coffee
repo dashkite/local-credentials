@@ -4,17 +4,17 @@ import Profile from "./profile"
 Profiles =
 
   create: (data) ->
-    @profiles.push Profile.create data
+    (@profiles ?= []).push await Profile.create data
     @store()
 
-  load: ->
-    @profiles ?= if (json = window.localStorage.getItem "profiles")?
+  get: ->
+    @profiles ?= if (json = localStorage.getItem "profiles")?
       Profile.fromObject data for data in JSON.parse json
 
   store: ->
     if @profiles?
-      window.localStorage.setItem "profiles",
-        JSON.stringify do ->
+      localStorage.setItem "profiles",
+        JSON.stringify do =>
           for profile in @profiles
             Profile.toObject profile
 

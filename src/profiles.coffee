@@ -1,38 +1,83 @@
+import {properties} from "panda-parchment"
 import {tee} from "panda-garden"
-import Profile from "./profile"
+import Confidential from "./confidential"
+import Grants from "./grants"
+
+{EncryptionKeyPair, SignatureKeyPair} = Confidential
+
+class Profile
+
+  @fromObject: (object) ->
+    {data, keyPairs, grants} = object
+    new Profile
+      data: data
+      grants: Grants.fromObject {grants, keyPairs}
+      keyPairs:
+        encryption: EncryptionKeyPair.from "base64", keyPairs.encryption
+        signature: SignatureKeyPair.from "base64", keyPairs.signature
+
+  @toObject: (profile) ->
+    {keyPairs, data, grants} = profile
+    data: data
+    grants: Grants.toObject grants if grants?
+    keyPairs:
+      encryption: keyPairs.encryption.to "base64"
+      signature: keyPairs.signature.to "base64"
+
+  @create: (data) ->
+    new Profile
+      data: data
+      keyPairs:
+        encryption: await EncryptionKeyPair.create()
+        signature: await SignatureKeyPair.create()
+
+  @update: (profile, handler) ->
+    await handler.call profile
+    Profiles.store()
+
+  constructor: ({@data = {}, @keyPairs, @grants}) ->
+
+  store: -> Profiles.commit()
+
+  update: (handler) -> Profile.update @, handler
 
 Profiles =
 
   create: (data) ->
-    (@profiles ?= []).push await Profile.create data
+    profile = await Profile.create data
+    (@_profiles ?= []).push profile
     @store()
+    profile
 
-  get: ->
-    @profiles ?= if (json = localStorage.getItem "profiles")?
-      Profile.fromObject data for data in JSON.parse json
+  commit: -> if @profiles? then @store @profiles
 
-  store: ->
-    if @profiles?
-      localStorage.setItem "profiles",
-        JSON.stringify do =>
-          for profile in @profiles
-            Profile.toObject profile
+  load: ->
+    if (json = localStorage.getItem "profiles")?
+      (Profile.fromObject data) for data in JSON.parse json
 
-Object.defineProperty Profiles, "current",
-  get: ->
-    @_current ?= do ->
-      if (profiles = Profiles.load())?
-        for profile in profiles
-          return profile if profile.current == true
-        # we should never reach here
-        throw "local-credentials: no current profile"
-  set: tee (profile) ->
-    profile.current = true
-    @_current = profile
-    @store()
+  store: (profiles) ->
+    localStorage.setItem "profiles",
+      JSON.stringify ((Profile.toObject profile) for profile in @_profiles)
 
-# add this here to avoid circular dependency
-Profile::store = -> Profiles.store()
+
+properties Profiles,
+
+  all:
+    get: -> @_profiles ?= @load()
+
+  current:
+    get: ->
+      @_current ?= do ->
+        if (profiles = Profiles.all)?
+          for profile in profiles
+            return profile if profile.current == true
+          # we should never reach here
+          throw "local-credentials: no current profile"
+    set: (profile) ->
+      profile.current = true
+      @_current = profile
+      @store()
+      profile
 
 
 export default Profiles

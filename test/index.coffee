@@ -10,6 +10,15 @@ import Confidential from "../src/confidential"
 import Profiles from "../src"
 import "./local-storage"
 
+reload = ->
+  # force deserialize to make sure we commited the change
+  # this is not part of the interface
+  Profiles._manager = undefined
+
+same = (a, b) ->
+  (a.keyPairs.encryption.publicKey.to "base64") ==
+    (b.keyPairs.encryption.publicKey.to "base64")
+
 do ->
 
   APIKeyPairs =
@@ -18,25 +27,30 @@ do ->
 
   print await test "Local Credentials",  [
 
-    test "Profile", [
+    await test "Profile", await do ->
 
-      test "Create", ->
-        alice = await Profiles.create nickname: "alice"
-        profiles = Profiles.all
-        assert.equal profiles[0], alice
+      alice = await Profiles.create nickname: "alice"
 
-      test "Current", ->
-        alice = await Profiles.create nickname: "alice"
-        Profiles.current = alice
-        assert.equal true, alice.current
+      [
 
-      test "Update", ->
-        alice = await Profiles.create nickname: "alice"
-        await alice.update -> @data.nickname = "bob"
-        # force deserialize to make sure we commited the change
-        # this is not part of the interface
-        Profiles._profiles = undefined
-        assert.equal "bob", Profiles.all[2].data.nickname
+        test "Create", ->
+          assert.equal Profiles.all[0], alice
+
+        test "Current", ->
+          Profiles.current = alice
+          assert same alice, Profiles.current
+
+        # need await here b/c of the reload in the next test
+        # otherwise the reload happens before the update commits
+        # this wouldn't normally happen because a reload only happens
+        # when the page reloads.
+        await test "Update", ->
+          await alice.update -> @data.friends = [ "bob" ]
+          assert.equal "bob", alice.data.friends[0]
+
+        test "Serialize", ->
+          reload()
+          assert.equal "alice", Profiles.current.data.nickname
 
     ]
 
@@ -48,13 +62,15 @@ do ->
 
         await test "Receive", ->
 
-          directory = await issue APIKeyPairs.signature, alice.keyPairs.signature.publicKey, [
-            template: "/profiles/alice/foo"
-            methods: ["OPTIONS", "POST"]
-          ,
-            template: "/profiles/alice/bar/{baz}"
-            methods: ["OPTIONS", "GET", "PUT"]
-          ]
+          directory = await issue APIKeyPairs.signature,
+            alice.keyPairs.signature.publicKey,
+            [
+              template: "/profiles/alice/foo"
+              methods: ["OPTIONS", "POST"]
+            ,
+              template: "/profiles/alice/bar/{baz}"
+              methods: ["OPTIONS", "GET", "PUT"]
+            ]
 
           sharedKey = SharedKey.create APIKeyPairs.encryption.privateKey,
             alice.keyPairs.encryption.publicKey
@@ -83,6 +99,18 @@ do ->
             path: "/profiles/alice/bar/fubar"
             method: "post"
             parameters: baz: "fubar"
+
+        test "Serialize", ->
+          reload()
+          count = 0
+          for profile in Profiles.all
+            if same profile, alice
+              count++
+              assert profile.grants.exercise
+                path: "/profiles/alice/bar/fubar"
+                method: "put"
+                parameters: baz: "fubar"
+          assert.equal 1, count
 
       ]
 

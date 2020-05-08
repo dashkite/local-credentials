@@ -1,4 +1,5 @@
 import {tee} from "panda-garden"
+import {properties} from "panda-parchment"
 import capability from "panda-capability"
 import Confidential from "./confidential"
 
@@ -7,7 +8,11 @@ import Confidential from "./confidential"
 
 class Grants
 
-  constructor: ({@directory, @keyPairs}) ->
+  constructor: ({@profile, @directory}) ->
+
+  properties @::,
+    address: get: -> @profile.keyPairs.encryption.publicKey.to "base64"
+    key: get: -> "profile/#{@address}/grants"
 
   exercise: (request) -> Grants.exercise @, request
 
@@ -15,11 +20,18 @@ class Grants
 
   receive: (key, ciphertext) -> Grants.receive @, key, ciphertext
 
-  @create: (object) -> new Grants object
+  @create: -> new Grants directory: Directory.create()
 
-  @toObject: (grants) -> @directory
+  @toObject: ({directory}) -> directory.to "base64"
 
-  @fromObject: (object) -> new Grants object
+  @fromObject: (directory) ->
+    new Grants directory: Directory.from "base64", directory
+
+  @load: (key) -> Grants.fromObject JSON.parse localStorage.getItem key
+
+  @store: tee (grants) ->
+    localStorage.setItem grants.key,
+      JSON.stringify Grants.toObject grants
 
   @add: tee (grants, directory) ->
     if grants.directory?
@@ -29,19 +41,22 @@ class Grants
           grants.directory[template][method] = entry
     else
       grants.directory = directory
+    Grants.store grants
 
   @receive: (grants, publicKey, ciphertext) ->
     sharedKey = SharedKey.create (PublicKey.from "base64", publicKey),
-      grants.keyPairs.encryption.privateKey
+      grants.profile.keyPairs.encryption.privateKey
     directory = Directory.from "bytes",
       (decrypt sharedKey, Envelope.from "base64", ciphertext).to "bytes"
     @add grants, directory
+    # can't use tee here because we're using this
+    grants
 
-  @exercise: ({directory, keyPairs}, {path, parameters, method}) ->
-    if directory? && (bundle = lookup directory, path, parameters)?
+  @exercise: ({directory, profile}, {path, parameters, method}) ->
+    if (bundle = lookup directory, path, parameters)?
       if (_capability = bundle[method.toUpperCase()])?
         {grant, useKeyPairs} = _capability
-        assertion = exercise keyPairs.signature,
+        assertion = exercise profile.keyPairs.signature,
           useKeyPairs, grant, url: parameters
         assertion.to "base64"
 

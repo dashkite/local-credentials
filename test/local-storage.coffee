@@ -8,5 +8,7 @@ LocalStorage =
 
   clear: -> store = {}
 
+  _data: store
+
 
 global.localStorage = LocalStorage

@@ -62,7 +62,7 @@ Creates a profile with the given data and stores it in LocalStorage. Automatical
 
 #### *Profiles.commit → undefined*
 
-Writes profiels to LocalStorage. You won’t typically need to call this directly.
+Writes profils to LocalStorage. You won’t typically need to call this directly.
 
 #### *Profiles.all*
 
@@ -78,17 +78,13 @@ References the current profile. Implicitly loads profiles if they haven’t alre
 
 Does a lookup for a grant suitable for the given request. If found, the grant is signed using the Profile signature key pair. Returns the signed grant. The request argument must provide `path`, `parameters`, and `method` properties.
 
-#### *Grants.add grants, directory ⇢ grants*
+#### *Grants.add grants, directory → grants*
 
-Adds new grants to grants and stores them in LocalStorage. Returns a promise for the updated grants.
+Adds new grants to grants and stores them in LocalStorage. Returns the updated grants. You won’t typically need to call this directly.
 
 #### *Grants.receive grants, key, ciphertext → directory*
 
 Decrypts a directory of grants from base64 ciphertext using the given base64 encoded sender public encryption key.
-
-#### *store ⇢ grants*
-
-Convenience method for Grants.store.
 
 #### *receive key, ciphertext ⇢ grants*
 

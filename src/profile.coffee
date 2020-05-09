@@ -36,6 +36,8 @@ class Profile
     await handler.call @
     @store()
 
+  delete: -> Store.run (db) => db.delete "profiles", @address
+
   receive: (publicKey, ciphertext) ->
     sharedKey = SharedKey.create (PublicKey.from "base64", publicKey),
       @keyPairs.encryption.privateKey
@@ -75,7 +77,9 @@ class Profile
   @toObject: (profile) -> profile.toObject()
 
   @load: (address) ->
-    Store.run (db) -> Profile.fromObject await db.get "profiles", address
+    Store.run (db) ->
+      profile = await db.get "profiles", address
+      Profile.fromObject profile if profile?
 
   @store: (profile) -> profile.store()
 

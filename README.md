@@ -66,7 +66,7 @@ Returns a promise for an array of all profiles.
 
 #### Property: *Profile.current ⇢ profile*
 
-Gets or sets the current profile. Getter returns a promise for the profile.
+Gets or sets the current profile. Getter returns a promise for the profile. Returns undefined if the current profile is not set or has been deleted.
 
 #### Method: *Profile::exercise request → claim*
 
@@ -79,3 +79,7 @@ Decrypts a directory of grants from base64 ciphertext using the given base64 enc
 #### Method: *Profile::update handler ⇢ undefined*
 
 Runs handler bound to profile and stores the profile. Useful for ensuring that profile updates are stored. Promise resolves when the update has been stored.
+
+#### Method: *Profile::delete ⇢ undefined*
+
+Deletes the given profile. If this the current profile, `Profile.current` will return undefined.

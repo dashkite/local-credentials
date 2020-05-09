@@ -28,11 +28,11 @@ do ->
 
       [
 
-        test "Create", ->
+        await test "Create", ->
           profiles = await Profile.all
           assert same profiles[0], alice
 
-        test "Current", ->
+        await test "Current", ->
           Profile.current = alice
           assert same alice, await Profile.current
 
@@ -45,10 +45,13 @@ do ->
           alice_ = await Profile.load alice.address
           assert.equal "bob", alice_.data.friends[0]
 
-        test "Serialize", ->
+        await test "Serialize", ->
           alice_ = await Profile.load alice.address
           assert.equal "alice", alice_.data.nickname
 
+        test "Delete", ->
+          await alice.delete()
+          console.log await Profile.load alice.address
     ]
 
     test "Grants", await do ->

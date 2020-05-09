@@ -46,7 +46,6 @@ class Profile
 
   exercise: ({path, parameters, method}) ->
     {directory} = @grants
-    console.log Directory.isType directory
     if (bundle = lookup directory, path, parameters)?
       if (_capability = bundle[method.toUpperCase()])?
         {grant, useKeyPairs} = _capability

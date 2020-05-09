@@ -1,6 +1,6 @@
 # Local Credentials
 
-_Manage profile and Web capabilities using Local Storage._
+_Manage profile and Web capabilities using IndexedDB._
 
 ## Scenarios
 
@@ -9,19 +9,19 @@ _Manage profile and Web capabilities using Local Storage._
 If you want to allow for multiple identities, you’ll need a way to list the choices.
 
 ```coffeescript
-Profiles.all
+profiles = await Profile.all
 ```
 
 #### Create A New Profile
 
 ```coffeescript
-alice = await Profiles.create nickname: "alice"
+alice = await Profile.create nickname: "alice"
 ```
 
 #### Get Current Profile
 
 ```coffeescript
-Profiles.current
+alice = await Profiles.current
 ```
 
 #### Set Current Profile
@@ -33,63 +33,49 @@ Profiles.current = alice
 #### Update And Store A Profile
 
 ```coffeescript
-profile.update -> @data.nickname = "bob"
+await profile.update -> @data.nickname = "alice"
 ```
 
 #### Add Grants To The Grants Directory
 
-The `key` and `data` variables are the sender’s public encryption key and the ciphertext of the grants.
+The `key` and `ciphertext` variables are the sender’s public encryption key and the Base64 ciphertext of the grants.
 
 ```coffeescript
-grants = Profiles.current.grants
-directory = grants.receive key, data
+alice = await Profile.current
+await alice.receive key, ciphertext
 ```
 
 #### Exercise A Grant For Use With A Request
 
 ```coffeescript
-grants = Profile.current.grants
-authorization = grants.exercise request
+alice = await Profile.current
+claim = grants.exercise request
 ```
 
 ## API
 
-### Profiles
+### Profile
 
-#### *Profiles.create data ⇢ profile*
+#### Function: *Profile.create data ⇢ profile*
 
-Creates a profile with the given data and stores it in LocalStorage. Automatically generates encryption and signature keypairs for use with the profile. Returns a promise for the profile.
+Creates a profile with the given data and stores it. Automatically generates encryption and signature keypairs for use with the profile. Returns a promise for the profile.
 
-#### *Profiles.commit → undefined*
+#### Property: *Profile.all ⇢ array*
 
-Writes profils to LocalStorage. You won’t typically need to call this directly.
+Returns a promise for an array of all profiles.
 
-#### *Profiles.all*
+#### Property: *Profile.current ⇢ profile*
 
-Reference an array of all profiles. Implicitly loads them from LocalStorage if necessary.
+Gets or sets the current profile. Getter returns a promise for the profile.
 
-#### *Profile.current*
+#### Method: *Profile::exercise request → claim*
 
-References the current profile. Implicitly loads profiles if they haven’t already been loaded.
+Exercise the grant corresponding to the given claim. Returns a claim (a countersigned grant). The request argument must provide `path`, `parameters`, and `method` properties.
 
-### Grants
+#### Method: *Profile::receive key, ciphertext ⇢ undefined*
 
-#### *Grants.exercise grants, request → assertion*
+Decrypts a directory of grants from base64 ciphertext using the given base64 encoded sender public encryption key, adds them to the profile’s grants directory, and stores the profile.
 
-Does a lookup for a grant suitable for the given request. If found, the grant is signed using the Profile signature key pair. Returns the signed grant. The request argument must provide `path`, `parameters`, and `method` properties.
+#### Method: *Profile::update handler ⇢ undefined*
 
-#### *Grants.add grants, directory → grants*
-
-Adds new grants to grants and stores them in LocalStorage. Returns the updated grants. You won’t typically need to call this directly.
-
-#### *Grants.receive grants, key, ciphertext → directory*
-
-Decrypts a directory of grants from base64 ciphertext using the given base64 encoded sender public encryption key.
-
-#### *receive key, ciphertext ⇢ grants*
-
-Convenience method for Grants.add.
-
-#### *exercise request → authorization*
-
-Convenience method for Grants.exercise.
+Runs handler bound to profile and stores the profile. Useful for ensuring that profile updates are stored. Promise resolves when the update has been stored.

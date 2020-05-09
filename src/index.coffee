@@ -1,2 +1,2 @@
-import Profiles from "./profiles"
-export default Profiles
+import Profile from "./profile"
+export default Profile

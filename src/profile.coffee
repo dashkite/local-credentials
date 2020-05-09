@@ -1,56 +1,90 @@
 import {properties} from "panda-parchment"
-import {tee} from "panda-garden"
-import Confidential from "./confidential"
+import {Capability, Confidential} from "./helpers"
 import Grants from "./grants"
+import Store from "./store"
 
-{EncryptionKeyPair, SignatureKeyPair} = Confidential
+{EncryptionKeyPair, SignatureKeyPair, SharedKey, PublicKey,
+  Message, Envelope, encrypt, decrypt} = Confidential
+
+{Directory, lookup, exercise} = Capability
 
 class Profile
+
+  properties @,
+    all:
+      get: -> Store.run (db) -> db.getAll "profiles"
+    current:
+      get: -> Profile.load localStorage.getItem "current"
+      set: (profile) -> localStorage.setItem "current", profile.address
+
+  properties @::,
+    address: get: -> @keyPairs.encryption.publicKey.to "base64"
+
+  constructor: ({@data = {}, @keyPairs, @grants}) ->
+
+  toObject: ->
+    address: @address
+    data: @data
+    grants: @grants.toObject()
+    keyPairs:
+      encryption: @keyPairs.encryption.to "base64"
+      signature: @keyPairs.signature.to "base64"
+
+  store: -> Store.run (db) => db.put "profiles", @toObject()
+
+  update: (handler) ->
+    await handler.call @
+    @store()
+
+  receive: (publicKey, ciphertext) ->
+    sharedKey = SharedKey.create (PublicKey.from "base64", publicKey),
+      @keyPairs.encryption.privateKey
+    directory = Directory.from "bytes",
+      (decrypt sharedKey, Envelope.from "base64", ciphertext).to "bytes"
+    @grants.add directory
+    @store()
+
+  exercise: ({path, parameters, method}) ->
+    {directory} = @grants
+    console.log Directory.isType directory
+    if (bundle = lookup directory, path, parameters)?
+      if (_capability = bundle[method.toUpperCase()])?
+        {grant, useKeyPairs} = _capability
+        claim = exercise @keyPairs.signature,
+          useKeyPairs, grant, url: parameters
+        claim.to "base64"
+
+  @create: (data) ->
+    profile = new Profile
+      data: data
+      grants: Grants.create()
+      keyPairs:
+        encryption: await EncryptionKeyPair.create()
+        signature: await SignatureKeyPair.create()
+    await profile.store()
+    profile
 
   @fromObject: (object) ->
     {data, keyPairs, grants} = object
     new Profile
       data: data
-      grants: Grants.load grants.key
+      grants: Grants.fromObject grants
       keyPairs:
         encryption: EncryptionKeyPair.from "base64", keyPairs.encryption
         signature: SignatureKeyPair.from "base64", keyPairs.signature
 
-  @toObject: (profile) ->
-    {keyPairs, data, grants} = profile
-    data: data
-    grants: key: grants.key
-    keyPairs:
-      encryption: keyPairs.encryption.to "base64"
-      signature: keyPairs.signature.to "base64"
+  @toObject: (profile) -> profile.toObject()
 
-  @create: (data) ->
-    new Profile
-      data: data
-      keyPairs:
-        encryption: await EncryptionKeyPair.create()
-        signature: await SignatureKeyPair.create()
+  @load: (address) ->
+    Store.run (db) -> Profile.fromObject await db.get "profiles", address
 
-  @load: (key) ->
-    Profile.fromObject JSON.parse localStorage.getItem key
+  @store: (profile) -> profile.store()
 
-  @store: tee (profile) ->
-    localStorage.setItem profile.key,
-      JSON.stringify Profile.toObject profile
+  @update: (profile, handler) -> profile.update handler
 
-  @update: tee (profile, handler) ->
-    await handler.call profile
-    Profile.store profile
+  @receive: (profile, publicKey, ciphertext) ->
+    profile.add publicKey, ciphertext
 
-  constructor: ({@data = {}, @keyPairs, @grants}) ->
-    @grants ?= Grants.create()
-    @grants.profile = @
-    Grants.store @grants
-
-  update: (handler) -> Profile.update @, handler
-
-  properties @::,
-    address: get: -> @keyPairs.encryption.publicKey.to "base64"
-    key: get: -> "profile/#{@address}"
+  @exercise: (profile, request) -> profile.exercise request
 
 export default Profile

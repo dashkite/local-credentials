@@ -1,44 +1,40 @@
+import "fake-indexeddb/auto"
 import assert from "assert"
 import {print, test, success} from "amen"
 import capability from "panda-capability"
-import Confidential from "../src/confidential"
+import {Confidential, Capability} from "../src/helpers"
 
 {SharedKey, SignatureKeyPair, EncryptionKeyPair,
   Message, Envelope, encrypt} = Confidential
-{Directory, issue} = capability Confidential
+{Directory, issue} = Capability
 
-import Profiles from "../src"
+import Profile from "../src"
 import "./local-storage"
 
 reload = ->
   # force deserialize to make sure we commited the change
   # this is not part of the interface
-  Profiles._manager = undefined
 
-same = (a, b) ->
-  (a.keyPairs.encryption.publicKey.to "base64") ==
-    (b.keyPairs.encryption.publicKey.to "base64")
+same = (a, b) -> a.address == b.address
+
 
 do ->
 
-  APIKeyPairs =
-    encryption: await EncryptionKeyPair.create()
-    signature: await SignatureKeyPair.create()
-
-  print await test "Local Credentials",  [
+  print await test "Zinc: Local Profiles",  [
 
     await test "Profile", await do ->
 
-      alice = await Profiles.create nickname: "alice"
+      alice = await Profile.create nickname: "alice"
 
       [
 
         test "Create", ->
-          assert.equal Profiles.all[0], alice
+          profiles = await Profile.all
+          assert same profiles[0], alice
 
         test "Current", ->
-          Profiles.current = alice
-          assert same alice, Profiles.current
+          Profile.current = alice
+          assert same alice, await Profile.current
 
         # need await here b/c of the reload in the next test
         # otherwise the reload happens before the update commits
@@ -46,21 +42,26 @@ do ->
         # when the page reloads.
         await test "Update", ->
           await alice.update -> @data.friends = [ "bob" ]
-          assert.equal "bob", alice.data.friends[0]
+          alice_ = await Profile.load alice.address
+          assert.equal "bob", alice_.data.friends[0]
 
         test "Serialize", ->
-          reload()
-          assert.equal "alice", Profiles.current.data.nickname
+          alice_ = await Profile.load alice.address
+          assert.equal "alice", alice_.data.nickname
 
     ]
 
     test "Grants", await do ->
 
-      alice = await Profiles.create nickname: "alice"
+      alice = await Profile.create nickname: "alice"
 
       [
 
         await test "Receive", ->
+
+          APIKeyPairs =
+            encryption: await EncryptionKeyPair.create()
+            signature: await SignatureKeyPair.create()
 
           directory = await issue APIKeyPairs.signature,
             alice.keyPairs.signature.publicKey,
@@ -78,39 +79,34 @@ do ->
           envelope = await encrypt sharedKey,
             Message.from "bytes", directory.to "bytes"
 
-          alice.grants.receive (APIKeyPairs.encryption.publicKey.to "base64"),
+          await alice.receive (APIKeyPairs.encryption.publicKey.to "base64"),
             envelope.to "base64"
 
           assert alice.grants.directory
 
         test "Exercise", ->
 
-          assert alice.grants.exercise
+          assert alice.exercise
             path: "/profiles/alice/foo"
             method: "post"
             parameters: {}
 
-          assert alice.grants.exercise
+          assert alice.exercise
             path: "/profiles/alice/bar/fubar"
             method: "put"
             parameters: baz: "fubar"
 
-          assert !alice.grants.exercise
+          assert !alice.exercise
             path: "/profiles/alice/bar/fubar"
             method: "post"
             parameters: baz: "fubar"
 
         test "Serialize", ->
-          reload()
-          count = 0
-          for profile in Profiles.all
-            if same profile, alice
-              count++
-              assert profile.grants.exercise
-                path: "/profiles/alice/bar/fubar"
-                method: "put"
-                parameters: baz: "fubar"
-          assert.equal 1, count
+          alice_ = await Profile.load alice.address
+          assert alice_.exercise
+            path: "/profiles/alice/bar/fubar"
+            method: "put"
+            parameters: baz: "fubar"
 
       ]
 

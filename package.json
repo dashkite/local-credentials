@@ -24,6 +24,7 @@
     "test": "p9k test"
   },
   "dependencies": {
+    "idb": "^5.0.2",
     "panda-capability": "^1.0.0",
     "panda-confidential": "^3.0.0",
     "panda-garden": "^5.0.0"
@@ -31,6 +32,7 @@
   "devDependencies": {
     "amen": "^3.0.0",
     "dom-storage": "^2.1.0",
+    "fake-indexeddb": "^3.0.0",
     "panda-9000": "^5.0.2",
     "panda-builder": "^4.0.13"
   }

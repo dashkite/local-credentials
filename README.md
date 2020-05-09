@@ -52,6 +52,15 @@ alice = await Profile.current
 claim = grants.exercise request
 ```
 
+#### Delete A Profile
+
+```coffeescript
+alice = await Profile.current
+await alice.delete()
+```
+
+
+
 ## API
 
 ### Profile

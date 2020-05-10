@@ -85,6 +85,8 @@ class Profile
 
   @update: (profile, handler) -> profile.update handler
 
+  @delete: (profile) -> profile.delete()
+
   @receive: (profile, publicKey, ciphertext) ->
     profile.add publicKey, ciphertext
 

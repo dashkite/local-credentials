@@ -51,7 +51,7 @@ do ->
 
         test "Delete", ->
           await alice.delete()
-          console.log await Profile.load alice.address
+          assert !await Profile.load alice.address
     ]
 
     test "Grants", await do ->

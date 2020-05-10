@@ -1,11 +1,11 @@
 {
   "name": "@dashkite/zinc",
   "version": "0.0.1",
-  "description": "Manage profile and Web capabilities using Local Storage.",
+  "description": "Manage profiles and Web capabilities locally in the browser.",
   "keywords": [],
-  "homepage": "https://github.com/dashkite/local-credentials#readme",
+  "homepage": "https://github.com/dashkite/zinc#readme",
   "bugs": {
-    "url": "https://github.com/dashkite/local-credentials/issues"
+    "url": "https://github.com/dashkite/zinc/issues"
   },
   "repository": {
     "type": "git",

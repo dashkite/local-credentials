@@ -2,6 +2,12 @@
 
 _Manage profile and Web capabilities using IndexedDB._
 
+## Install
+
+`npm i @dashkite/zinc`
+
+Use with your favorite bundler.
+
 ## Scenarios
 
 #### List All Profiles
@@ -21,13 +27,13 @@ alice = await Profile.create nickname: "alice"
 #### Get Current Profile
 
 ```coffeescript
-alice = await Profiles.current
+alice = await Profile.current
 ```
 
 #### Set Current Profile
 
 ```coffeescript
-Profiles.current = alice
+Profile.current = alice
 ```
 
 #### Update And Store A Profile
@@ -63,11 +69,20 @@ await alice.delete()
 
 ## API
 
+Conventions:
+
+- A function or method with a dotted arrow ⇢ yields or returns a Promise
+- The `::` indicates the prototype. Ex: `Profile::exercise` is a method, not a class function.
+
 ### Profile
 
 #### Function: *Profile.create data ⇢ profile*
 
 Creates a profile with the given data and stores it. Automatically generates encryption and signature keypairs for use with the profile. Returns a promise for the profile.
+
+#### Function: *Profile.load address ⇢ profile*
+
+Load the profile corresponding to the given address (public encryption key).
 
 #### Property: *Profile.all ⇢ array*
 

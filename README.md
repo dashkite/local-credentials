@@ -1,4 +1,4 @@
-# Local Credentials
+# Zinc
 
 _Manage profile and Web capabilities using IndexedDB._
 

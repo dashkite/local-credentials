@@ -30,6 +30,8 @@ class Profile
       encryption: @keyPairs.encryption.to "base64"
       signature: @keyPairs.signature.to "base64"
 
+  toJSON: -> JSON.stringify @toObject()
+
   store: -> Store.run (db) => db.put "profiles", @toObject()
 
   update: (handler) ->
@@ -74,7 +76,11 @@ class Profile
         encryption: EncryptionKeyPair.from "base64", keyPairs.encryption
         signature: SignatureKeyPair.from "base64", keyPairs.signature
 
+  @fromJSON: (json) -> @fromObject JSON.parse json
+
   @toObject: (profile) -> profile.toObject()
+
+  @toJSON: (profile) -> profile.toJSON()
 
   @load: (address) ->
     Store.run (db) ->

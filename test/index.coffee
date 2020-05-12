@@ -45,9 +45,18 @@ do ->
           alice_ = await Profile.load alice.address
           assert.equal "bob", alice_.data.friends[0]
 
-        await test "Serialize", ->
-          alice_ = await Profile.load alice.address
-          assert.equal "alice", alice_.data.nickname
+        await test "Serialize", [
+
+            await test "From Address", ->
+              alice_ = await Profile.load alice.address
+              assert.equal "alice", alice_.data.nickname
+
+            await test "From JSON", ->
+              alice = await Profile.current
+              alice_ = Profile.fromJSON alice.toJSON()
+              assert same alice, alice_
+
+          ]
 
         test "Delete", ->
           await alice.delete()

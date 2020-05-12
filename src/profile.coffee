@@ -11,6 +11,8 @@ import Store from "./store"
 
 class Profile
 
+  @Confidential = Confidential
+
   properties @,
     all:
       get: -> Store.run (db) -> db.getAll "profiles"

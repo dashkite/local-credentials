@@ -32,6 +32,9 @@ do ->
 
       [
 
+        await test "Confidential", ->
+          assert Profile.Confidential
+
         await test "Create", ->
           profiles = await Profile.all
           assert same profiles[0], alice

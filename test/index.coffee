@@ -1,6 +1,10 @@
-import "fake-indexeddb/auto"
 import assert from "assert"
 import {print, test, success} from "amen"
+
+import "fake-indexeddb/auto"
+import CustomEvent from "./custom-event"
+global.CustomEvent = CustomEvent
+
 import capability from "@dashkite/cobalt"
 import {Confidential, Capability} from "../src/helpers"
 
@@ -58,10 +62,19 @@ do ->
 
         ]
 
+        await test "Events", ->
+          updated = undefined
+          Profile.on update: (profile) -> updated = profile
+          await alice.store()
+          assert same alice, updated
+
         test "Delete", ->
           await alice.delete()
           assert !await Profile.load alice.address
+
+
     ]
+
 
     test "Grants", await do ->
 

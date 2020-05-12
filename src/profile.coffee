@@ -1,4 +1,5 @@
 import {properties, toUpper} from "panda-parchment"
+import Events from "@dashkite/events"
 import {Capability, Confidential} from "./helpers"
 import Grants from "./grants"
 import Store from "./store"
@@ -16,6 +17,8 @@ class Profile
     current:
       get: -> Profile.load localStorage.getItem "current"
       set: (profile) -> localStorage.setItem "current", profile.address
+    events:
+      get: -> @_events ?= Events.create()
 
   properties @::,
     address: get: -> @keyPairs.encryption.publicKey.to "base64"
@@ -32,7 +35,9 @@ class Profile
 
   toJSON: -> JSON.stringify @toObject()
 
-  store: -> Store.run (db) => db.put "profiles", @toObject()
+  store: ->
+    await Store.run (db) => db.put "profiles", @toObject()
+    Profile.dispatch "update", @
 
   update: (handler) ->
     await handler.call @
@@ -97,6 +102,10 @@ class Profile
   @update: (profile, handler) -> profile.update handler
 
   @delete: (profile) -> profile.delete()
+
+  @dispatch: (name, value) -> @events.dispatch name, value
+
+  @on: (description) -> @events.on description
 
   @receive: (profile, publicKey, ciphertext) ->
     profile.add publicKey, ciphertext

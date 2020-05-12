@@ -25,6 +25,7 @@
   },
   "dependencies": {
     "@dashkite/cobalt": "^2.0.1",
+    "@dashkite/events": "0.0.1",
     "idb": "^5.0.2",
     "panda-confidential": "^3.0.0",
     "panda-garden": "^5.0.0"

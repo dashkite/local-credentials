@@ -1,12 +1,12 @@
 import "fake-indexeddb/auto"
 import assert from "assert"
 import {print, test, success} from "amen"
-import capability from "panda-capability"
+import capability from "@dashkite/cobalt"
 import {Confidential, Capability} from "../src/helpers"
 
 {SharedKey, SignatureKeyPair, EncryptionKeyPair,
   Message, Envelope, encrypt} = Confidential
-{Directory, issue} = Capability
+{Directory, issue, bundle} = Capability
 
 import Profile from "../src"
 import "./local-storage"
@@ -47,16 +47,16 @@ do ->
 
         await test "Serialize", [
 
-            await test "From Address", ->
-              alice_ = await Profile.load alice.address
-              assert.equal "alice", alice_.data.nickname
+          await test "From Address", ->
+            alice_ = await Profile.load alice.address
+            assert.equal "alice", alice_.data.nickname
 
-            await test "From JSON", ->
-              alice = await Profile.current
-              alice_ = Profile.fromJSON alice.toJSON()
-              assert same alice, alice_
+          await test "From JSON", ->
+            alice = await Profile.current
+            alice_ = Profile.fromJSON alice.toJSON()
+            assert same alice, alice_
 
-          ]
+        ]
 
         test "Delete", ->
           await alice.delete()
@@ -75,15 +75,34 @@ do ->
             encryption: await EncryptionKeyPair.create()
             signature: await SignatureKeyPair.create()
 
-          directory = await issue APIKeyPairs.signature,
-            alice.keyPairs.signature.publicKey,
-            [
+          expiration = do ->
+            d = new Date()
+            d.setMinutes d.getMinutes() + 2
+            d.toISOString()
+
+          directory = bundle [
+            issue APIKeyPairs.signature,
               template: "/profiles/alice/foo"
-              methods: ["OPTIONS", "POST"]
-            ,
+              methods: [ "POST" ]
+              tolerance:
+                seconds: 5
+              expires: expiration
+              issuer:
+                literal: APIKeyPairs.signature.publicKey.to "base64"
+              claimant:
+                literal: alice.keyPairs.signature.publicKey.to "base64"
+
+            issue APIKeyPairs.signature,
               template: "/profiles/alice/bar/{baz}"
-              methods: ["OPTIONS", "GET", "PUT"]
-            ]
+              methods: [ "GET", "PUT" ]
+              tolerance:
+                seconds: 5
+              expires: expiration
+              issuer:
+                literal: APIKeyPairs.signature.publicKey.to "base64"
+              claimant:
+                literal: alice.keyPairs.signature.publicKey.to "base64"
+          ]
 
           sharedKey = SharedKey.create APIKeyPairs.encryption.privateKey,
             alice.keyPairs.encryption.publicKey

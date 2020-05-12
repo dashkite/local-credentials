@@ -18,14 +18,14 @@
     "test": "test"
   },
   "files": [
-    "./build"
+    "build/npm/src"
   ],
   "scripts": {
     "test": "p9k test"
   },
   "dependencies": {
+    "@dashkite/cobalt": "^2.0.1",
     "idb": "^5.0.2",
-    "panda-capability": "^1.0.0",
     "panda-confidential": "^3.0.0",
     "panda-garden": "^5.0.0"
   },

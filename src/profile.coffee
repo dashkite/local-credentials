@@ -1,4 +1,4 @@
-import {properties} from "panda-parchment"
+import {properties, toUpper} from "panda-parchment"
 import {Capability, Confidential} from "./helpers"
 import Grants from "./grants"
 import Store from "./store"
@@ -50,11 +50,16 @@ class Profile
 
   exercise: ({path, parameters, method}) ->
     {directory} = @grants
-    if (bundle = lookup directory, path, parameters)?
-      if (_capability = bundle[method.toUpperCase()])?
-        {grant, useKeyPairs} = _capability
-        claim = exercise @keyPairs.signature,
-          useKeyPairs, grant, url: parameters
+    if (methods = lookup directory, path, parameters)?
+      method = toUpper method
+      if (contract = methods[method])?
+        claim = exercise @keyPairs.signature, contract,
+          template: parameters
+          method: method
+          claimant:
+            # TODO make determination (web v literal) dynamic
+            #      we can inspect the contract to do this per David
+            literal: @keyPairs.signature.publicKey.to "base64"
         claim.to "base64"
 
   @create: (data) ->

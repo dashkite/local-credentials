@@ -76,6 +76,26 @@ Conventions:
 
 ### Profile
 
+#### Property: *Profile.Confidential*
+
+Returns the instance of Confidential used by Zinc to generate key pairs and other cryptographic elements, and to perform cryptographic operations.
+
+#### Function: *Profile.on event-handlers*
+
+Set event handlers for Profile-related events based on the *event-handlers*, which is a dictionary of events and handlers. Handlers should be functions that take an optional _target_ argument.
+
+```coffeescript
+Profile.on update: (profile) -> console.log "Profile [#{profile.address}] updated"
+```
+
+#### Function: *Profile.dispatch event, value*
+
+Fire a. Profile-related event. You typically do not need to call this directly.
+
+#### Event: *update → profile*
+
+Fired whenever a profile is updated. The updated profile is passed to the event handler.
+
 #### Function: *Profile.create data ⇢ profile*
 
 Creates a profile with the given data and stores it. Automatically generates encryption and signature keypairs for use with the profile. Returns a promise for the profile.

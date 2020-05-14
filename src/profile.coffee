@@ -24,6 +24,10 @@ class Profile
 
   properties @::,
     address: get: -> @keyPairs.encryption.publicKey.to "base64"
+    publicKeys: get: ->
+      encryption: @keyPairs.encryption.publicKey.to "base64"
+      signature: @keyPairs.signature.publicKey.to "base64"
+
 
   constructor: ({@data = {}, @keyPairs, @grants}) ->
 

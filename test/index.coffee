@@ -8,7 +8,7 @@ global.CustomEvent = CustomEvent
 import capability from "@dashkite/cobalt"
 import {Confidential, Capability} from "../src/helpers"
 
-{SharedKey, SignatureKeyPair, EncryptionKeyPair,
+{SharedKey, SignatureKeyPair, EncryptionKeyPair, PublicKey,
   Message, Envelope, encrypt} = Confidential
 {Directory, issue, bundle} = Capability
 
@@ -62,6 +62,14 @@ do ->
             alice = await Profile.current
             alice_ = Profile.fromJSON alice.toJSON()
             assert same alice, alice_
+
+          await test "Public Keys", ->
+            alice = await Profile.current
+            keys = alice.publicKeys
+            assert.equal keys.encryption,
+              alice.keyPairs.encryption.publicKey.to "base64",
+            assert.equal keys.signature,
+              alice.keyPairs.signature.publicKey.to "base64", 
 
         ]
 

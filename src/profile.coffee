@@ -28,7 +28,6 @@ class Profile
       encryption: @keyPairs.encryption.publicKey.to "base64"
       signature: @keyPairs.signature.publicKey.to "base64"
 
-
   constructor: ({@data = {}, @keyPairs, @grants}) ->
 
   toObject: ->

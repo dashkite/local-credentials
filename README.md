@@ -42,6 +42,12 @@ Profile.current = alice
 await profile.update -> @data.nickname = "alice"
 ```
 
+#### Listen For Changes To A Profile
+
+```coffeescript
+Profile.on "update", (profile) -> console.log "Profile [#{profile.address}] updated"
+```
+
 #### Add Grants To The Grants Directory
 
 The `key` and `ciphertext` variables are the sender’s public encryption key and the Base64 ciphertext of the grants.
@@ -64,8 +70,6 @@ claim = grants.exercise request
 alice = await Profile.current
 await alice.delete()
 ```
-
-
 
 ## API
 

@@ -17,7 +17,9 @@ class Profile
     all:
       get: -> Store.run (db) -> db.getAll "profiles"
     current:
-      get: -> Profile.load localStorage.getItem "current"
+      get: ->
+        if (address = localStorage.getItem "current")?
+          Profile.load address
       set: (profile) -> localStorage.setItem "current", profile.address
     events:
       get: -> @_events ?= Events.create()

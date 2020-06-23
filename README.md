@@ -45,7 +45,7 @@ await profile.update -> @data.nickname = "alice"
 #### Listen For Changes To A Profile
 
 ```coffeescript
-Profile.on "update", (profile) -> console.log "Profile [#{profile.address}] updated"
+Profile.on update: (profile) -> console.log "Profile [#{profile.address}] updated"
 ```
 
 #### Add Grants To The Grants Directory

@@ -40,6 +40,7 @@ do ->
           assert same profiles[0], alice
 
         await test "Current", ->
+          assert !(await Profile.current)
           Profile.current = alice
           assert same alice, await Profile.current
 
@@ -69,7 +70,7 @@ do ->
             assert.equal keys.encryption,
               alice.keyPairs.encryption.publicKey.to "base64",
             assert.equal keys.signature,
-              alice.keyPairs.signature.publicKey.to "base64", 
+              alice.keyPairs.signature.publicKey.to "base64",
 
         ]
 
@@ -138,6 +139,23 @@ do ->
             envelope.to "base64"
 
           assert alice.grants.directory
+
+        test "Lookup", ->
+
+          assert alice.lookup
+            path: "/profiles/alice/foo"
+            method: "post"
+            parameters: {}
+
+          assert alice.lookup
+            path: "/profiles/alice/bar/fubar"
+            method: "put"
+            parameters: baz: "fubar"
+
+          assert !alice.lookup
+            path: "/profiles/alice/bar/fubar"
+            method: "post"
+            parameters: baz: "fubar"
 
         test "Exercise", ->
 

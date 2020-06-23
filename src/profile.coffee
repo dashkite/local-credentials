@@ -60,19 +60,27 @@ class Profile
     @grants.add directory
     @store()
 
-  exercise: ({path, parameters, method}) ->
-    {directory} = @grants
-    if (methods = lookup directory, path, parameters)?
-      method = toUpper method
-      if (contract = methods[method])?
-        claim = exercise @keyPairs.signature, contract,
-          template: parameters
-          method: method
-          claimant:
-            # TODO make determination (web v literal) dynamic
-            #      we can inspect the contract to do this per David
-            literal: @keyPairs.signature.publicKey.to "base64"
-        claim.to "base64"
+
+  lookup: do ({directory, methods, contract, claim} = {}) ->
+    ({path, parameters, method}) ->
+      {directory} = @grants
+      if (methods = lookup directory, path, parameters)?
+        methods[(toUpper method)]
+
+  exercise: do ({directory, methods, contract, claim} = {}) ->
+    ({path, parameters, method}) ->
+      {directory} = @grants
+      if (methods = lookup directory, path, parameters)?
+        method = toUpper method
+        if (contract = methods[(toUpper method)])?
+          claim = exercise @keyPairs.signature, contract,
+            template: parameters
+            method: method
+            claimant:
+              # TODO make determination (web v literal) dynamic
+              #      we can inspect the contract to do this per David
+              literal: @keyPairs.signature.publicKey.to "base64"
+          claim.to "base64"
 
   @create: (data) ->
     profile = new Profile
@@ -117,6 +125,9 @@ class Profile
   @receive: (profile, publicKey, ciphertext) ->
     profile.add publicKey, ciphertext
 
+  @lookup: (profile, request) -> profile.lookup request
+
   @exercise: (profile, request) -> profile.exercise request
+
 
 export default Profile

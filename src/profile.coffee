@@ -18,9 +18,12 @@ class Profile
       get: -> Store.run (db) -> db.getAll "profiles"
     current:
       get: ->
-        if (address = localStorage.getItem "current")?
-          Profile.load address
-      set: (profile) -> localStorage.setItem "current", profile.address
+        if (json = localStorage.getItem "current")?
+          {host, address} = JSON.parse json
+          Profile.load host, address
+      set: (profile) ->
+        {host, address} = profile
+        localStorage.setItem "current", JSON.stringify {host, address}
     events:
       get: -> @_events ?= Events.create()
 
@@ -30,9 +33,10 @@ class Profile
       encryption: @keyPairs.encryption.publicKey.to "base64"
       signature: @keyPairs.signature.publicKey.to "base64"
 
-  constructor: ({@data = {}, @keyPairs, @grants}) ->
+  constructor: ({@host, @data = {}, @keyPairs, @grants}) ->
 
   toObject: ->
+    host: @host
     address: @address
     data: @data
     grants: @grants.toObject()
@@ -50,7 +54,7 @@ class Profile
     await handler.call @
     @store()
 
-  delete: -> Store.run (db) => db.delete "profiles", @address
+  delete: -> Store.run (db) => db.delete "profiles", [ @host, @address ]
 
   receive: (publicKey, ciphertext) ->
     sharedKey = SharedKey.create (PublicKey.from "base64", publicKey),
@@ -82,8 +86,9 @@ class Profile
               literal: @keyPairs.signature.publicKey.to "base64"
           claim.to "base64"
 
-  @create: (data) ->
+  @create: (host, data) ->
     profile = new Profile
+      host: host
       data: data
       grants: Grants.create()
       keyPairs:
@@ -93,8 +98,9 @@ class Profile
     profile
 
   @fromObject: (object) ->
-    {data, keyPairs, grants} = object
+    {host, data, keyPairs, grants} = object
     new Profile
+      host: host
       data: data
       grants: Grants.fromObject grants
       keyPairs:
@@ -107,9 +113,9 @@ class Profile
 
   @toJSON: (profile) -> profile.toJSON()
 
-  @load: (address) ->
+  @load: (host, address) ->
     Store.run (db) ->
-      profile = await db.get "profiles", address
+      profile = await db.get "profiles", [ host, address ]
       Profile.fromObject profile if profile?
 
   @store: (profile) -> profile.store()

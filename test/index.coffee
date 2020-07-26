@@ -21,6 +21,7 @@ reload = ->
 
 same = (a, b) -> a.address == b.address
 
+host = "https://localhost"
 
 do ->
 
@@ -28,7 +29,7 @@ do ->
 
     await test "Profile", await do ->
 
-      alice = await Profile.create nickname: "alice"
+      alice = await Profile.create host, nickname: "alice"
 
       [
 
@@ -50,13 +51,13 @@ do ->
         # when the page reloads.
         await test "Update", ->
           await alice.update -> @data.friends = [ "bob" ]
-          alice_ = await Profile.load alice.address
+          alice_ = await Profile.load host, alice.address
           assert.equal "bob", alice_.data.friends[0]
 
         await test "Serialize", [
 
           await test "From Address", ->
-            alice_ = await Profile.load alice.address
+            alice_ = await Profile.load host, alice.address
             assert.equal "alice", alice_.data.nickname
 
           await test "From JSON", ->
@@ -71,7 +72,6 @@ do ->
               alice.keyPairs.encryption.publicKey.to "base64",
             assert.equal keys.signature,
               alice.keyPairs.signature.publicKey.to "base64",
-
         ]
 
         await test "Events", ->
@@ -80,17 +80,28 @@ do ->
           await alice.store()
           assert same alice, updated
 
-        test "Delete", ->
+        await test "Delete", ->
           await alice.delete()
-          assert !await Profile.load alice.address
+          assert !await Profile.load host, alice.address
 
-
+        test "Scoped Identity", ->
+          originals = await Promise.all [
+            Profile.create "#{host}:3000", nickname: "alice3000"
+            Profile.create "#{host}:8000", nickname: "alice8000"
+          ]
+          copies = await Promise.all [
+            Profile.load "#{host}:3000", originals[0].address
+            Profile.load "#{host}:8000", originals[1].address
+          ]
+          assert.equal originals[0].address, copies[0].address
+          assert.equal originals[1].address, copies[1].address
+          assert.notEqual copies[0].address, copies[1].address
     ]
 
 
     test "Grants", await do ->
 
-      alice = await Profile.create nickname: "alice"
+      alice = await Profile.create host, nickname: "alice"
 
       [
 
@@ -175,7 +186,7 @@ do ->
             parameters: baz: "fubar"
 
         test "Serialize", ->
-          alice_ = await Profile.load alice.address
+          alice_ = await Profile.load host, alice.address
           assert alice_.exercise
             path: "/profiles/alice/bar/fubar"
             method: "put"

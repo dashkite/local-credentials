@@ -21,7 +21,7 @@ profiles = await Profile.all
 #### Create A New Profile
 
 ```coffeescript
-alice = await Profile.create nickname: "alice"
+alice = await Profile.create authority, nickname: "alice"
 ```
 
 #### Get Current Profile
@@ -40,6 +40,18 @@ Profile.current = alice
 
 ```coffeescript
 await profile.update -> @data.nickname = "alice"
+```
+
+#### Create An Adjunct Profile
+
+```coffeescript
+await profile.createAdjunct authority, nickname: "alice"
+```
+
+#### Get An Adjunct Profile
+
+```coffeescript
+await profile.getAdjunct authority
 ```
 
 #### Listen For Changes To A Profile
@@ -100,13 +112,21 @@ Fire a. Profile-related event. You typically do not need to call this directly.
 
 Fired whenever a profile is updated. The updated profile is passed to the event handler.
 
-#### Function: *Profile.create data ⇢ profile*
+#### Function: *Profile.create authority, data ⇢ profile*
 
-Creates a profile with the given data and stores it. Automatically generates encryption and signature keypairs for use with the profile. Returns a promise for the profile.
+Creates a profile for a given authority and data and stores it. Automatically generates encryption and signature keypairs for use with the profile. Returns a promise for the profile.
 
-#### Function: *Profile.load address ⇢ profile*
+#### Function: *Profile.createAdjunct authority, data ⇢ profile*
 
-Load the profile corresponding to the given address (public encryption key).
+Creates a profile using the address for the current profile for a given authority and data and stores it. Automatically generates encryption and signature keypairs for use with the profile. Returns a promise for the profile.
+
+#### Function: *Profile.getAdjunct authority ⇢ profile*
+
+Loads and returns the adjunct profile for given authority. Returns a promise for the profile.
+
+#### Function: *Profile.load authority, address ⇢ profile*
+
+Load the profile corresponding to the given authority and address.
 
 #### Property: *Profile.all ⇢ array*
 
@@ -115,6 +135,13 @@ Returns a promise for an array of all profiles.
 #### Property: *Profile.current ⇢ profile*
 
 Gets or sets the current profile. Getter returns a promise for the profile. Returns undefined if the current profile is not set or has been deleted.
+
+#### Method: *Profile::createAdjunct authority, data ⇢ profile*
+Convenience method for `Profile.createAdjunct`.
+
+#### Method: *Profile::getAdjunct authority ⇢ profile*
+Convenience method for `Profile.getAdjunct`.
+
 
 #### Method: *Profile::exercise request → claim*
 

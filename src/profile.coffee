@@ -144,7 +144,7 @@ class Profile
 
   @createAdjunct: (host, data, profile) ->
     profile ?= await @current
-    profile.createAdjunct host
+    profile.createAdjunct host, data
 
   @getAdjunct: (host, profile) ->
     profile ?= await @current

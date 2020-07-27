@@ -28,12 +28,12 @@ class Profile
       get: -> @_events ?= Events.create()
 
   properties @::,
-    address: get: -> @keyPairs.encryption.publicKey.to "base64"
     publicKeys: get: ->
       encryption: @keyPairs.encryption.publicKey.to "base64"
       signature: @keyPairs.signature.publicKey.to "base64"
 
-  constructor: ({@host, @data = {}, @keyPairs, @grants}) ->
+  constructor: ({@host, @address, @data = {}, @keyPairs, @grants}) ->
+    @address ?= @keyPairs.encryption.publicKey.to "base64"
 
   toObject: ->
     host: @host
@@ -55,6 +55,11 @@ class Profile
     @store()
 
   delete: -> Store.run (db) => db.delete "profiles", [ @host, @address ]
+
+  createAdjunct: (host, data) -> Profile.createWithAddress host, @address, data
+
+  getAdjunct: (host) ->
+    if host == @host then @ else Profile.load host, @address
 
   receive: (publicKey, ciphertext) ->
     sharedKey = SharedKey.create (PublicKey.from "base64", publicKey),
@@ -97,10 +102,23 @@ class Profile
     await profile.store()
     profile
 
+  @createWithAddress: (host, address, data) ->
+    profile = new Profile
+      host: host
+      address: address
+      data: data
+      grants: Grants.create()
+      keyPairs:
+        encryption: await EncryptionKeyPair.create()
+        signature: await SignatureKeyPair.create()
+    await profile.store()
+    profile
+
   @fromObject: (object) ->
-    {host, data, keyPairs, grants} = object
+    {host, address, data, keyPairs, grants} = object
     new Profile
       host: host
+      address: address
       data: data
       grants: Grants.fromObject grants
       keyPairs:
@@ -123,6 +141,14 @@ class Profile
   @update: (profile, handler) -> profile.update handler
 
   @delete: (profile) -> profile.delete()
+
+  @createAdjunct: (host, data, profile) ->
+    profile ?= await @current
+    profile.createAdjunct host
+
+  @getAdjunct: (host, profile) ->
+    profile ?= await @current
+    profile?.getAdjunct host
 
   @dispatch: (name, value) -> @events.dispatch name, value
 

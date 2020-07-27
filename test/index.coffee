@@ -84,7 +84,7 @@ do ->
           await alice.delete()
           assert !await Profile.load host, alice.address
 
-        test "Scoped Identity", ->
+        await test "Scoped Identity", ->
           originals = await Promise.all [
             Profile.create "#{host}:3000", nickname: "alice3000"
             Profile.create "#{host}:8000", nickname: "alice8000"
@@ -96,8 +96,13 @@ do ->
           assert.equal originals[0].address, copies[0].address
           assert.equal originals[1].address, copies[1].address
           assert.notEqual copies[0].address, copies[1].address
-    ]
 
+        await test "Adjunct Identity", ->
+          alice = await Profile.create host, nickname: "alice"
+          await alice.createAdjunct "#{host}:3000", name: "alice"
+          assert.equal "alice",
+            (await alice.getAdjunct "#{host}:3000").data.name
+    ]
 
     test "Grants", await do ->
 

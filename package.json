@@ -25,6 +25,7 @@
   "main": "build/npm/src/index.js",
   "main:coffee": "src/index.coffee",
   "files": [
+    "src",
     "build/npm/src"
   ],
   "directories": {
@@ -44,6 +45,7 @@
     "amen": "^3.0.0",
     "fake-indexeddb": "^3.0.0",
     "panda-9000": "^5.0.2",
-    "panda-builder": "^4.0.13"
+    "panda-builder": "^4.0.13",
+    "panda-garden": "^5.0.0"
   }
 }

@@ -35,11 +35,11 @@
     "test": "p9k test"
   },
   "dependencies": {
-    "@dashkite/cobalt": "^2.0.5",
-    "@dashkite/events": "^0.0.2",
-    "@pandastrike/garden": "^8.0.1",
-    "idb": "^5.0.3",
-    "panda-confidential": "^3.0.1"
+    "@dashkite/cobalt": "2.0.5",
+    "@dashkite/events": "0.0.2",
+    "@pandastrike/garden": "8.0.1",
+    "idb": "5.0.3",
+    "panda-confidential": "3.0.2"
   },
   "devDependencies": {
     "amen": "^3.0.0",

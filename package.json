@@ -34,8 +34,7 @@
     "@dashkite/events": "file:../events",
     "@dashkite/joy": "^0.3.3",
     "idb": "^6.1.0",
-    "panda-confidential": "^3.0.2",
-    "panda-garden": "^5.0.0"
+    "panda-confidential": "^3.0.2"
   },
   "devDependencies": {
     "@dashkite/genie": "^0.3.3",

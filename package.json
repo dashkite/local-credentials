@@ -12,7 +12,16 @@
     "url": "git+https://github.com/dashkite/zinc.git"
   },
   "license": "SEE LICENSE IN LICENSE.md",
-  "author": "Dan Yoder",
+  "contributors": [
+    {
+      "name": "Dan Yoder",
+      "email": "dan@dashkite.com"
+    },
+    {
+      "name": "David Harper",
+      "email": "david@dashkite.com"
+    }
+  ],
   "main": "build/node/src/index.js",
   "main:coffee": "src/index.coffee",
   "exports": {
@@ -26,6 +35,9 @@
     "build/node/src",
     "src"
   ],
+  "directories": {
+    "test": "test"
+  },
   "scripts": {
     "test": "genie test"
   },

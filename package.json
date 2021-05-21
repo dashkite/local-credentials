@@ -31,7 +31,7 @@
   },
   "dependencies": {
     "@dashkite/cobalt": "^2.0.5",
-    "@dashkite/events": "file:../events",
+    "@dashkite/events": "^0.1.0",
     "@dashkite/joy": "^0.3.3",
     "idb": "^6.1.0",
     "panda-confidential": "^3.0.2"

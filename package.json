@@ -38,7 +38,7 @@
   },
   "devDependencies": {
     "@dashkite/genie": "^0.3.3",
-    "@dashkite/genie-presets": "file:../genie-presets",
+    "@dashkite/genie-presets": "^0.1.5",
     "@dashkite/masonry": "^0.10.3",
     "amen": "^3.0.0",
     "fake-indexeddb": "^3.1.2"

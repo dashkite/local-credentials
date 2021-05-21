@@ -1,7 +1,7 @@
 {
   "name": "@dashkite/zinc",
   "version": "0.1.0",
-  "description": "Manage profiles and Web capabilities locally in the browser.",
+  "description": "Manage profiles and Web grants locally in the browser.",
   "keywords": [],
   "homepage": "https://github.com/dashkite/zinc#readme",
   "bugs": {
@@ -12,28 +12,36 @@
     "url": "git+https://github.com/dashkite/zinc.git"
   },
   "license": "SEE LICENSE IN LICENSE.md",
-  "author": "",
-  "main": "build/npm/src/index.js",
-  "directories": {
-    "test": "test"
+  "author": "Dan Yoder",
+  "main": "build/node/src/index.js",
+  "main:coffee": "src/index.coffee",
+  "exports": {
+    ".": {
+      "import": "./build/import/src/index.js",
+      "node": "./build/node/src/index.js"
+    }
   },
   "files": [
-    "build/npm/src"
+    "build/import/src",
+    "build/node/src",
+    "src"
   ],
   "scripts": {
-    "test": "p9k test"
+    "test": "genie test"
   },
   "dependencies": {
-    "@dashkite/cobalt": "^2.0.3",
-    "@dashkite/events": "0.0.1",
-    "idb": "^5.0.3",
-    "panda-confidential": "^3.0.0",
+    "@dashkite/cobalt": "^2.0.5",
+    "@dashkite/events": "file:../events",
+    "@dashkite/joy": "^0.3.3",
+    "idb": "^6.1.0",
+    "panda-confidential": "^3.0.2",
     "panda-garden": "^5.0.0"
   },
   "devDependencies": {
+    "@dashkite/genie": "^0.3.3",
+    "@dashkite/genie-presets": "^0.1.4",
+    "@dashkite/masonry": "^0.10.3",
     "amen": "^3.0.0",
-    "fake-indexeddb": "^3.0.0",
-    "panda-9000": "^5.0.2",
-    "panda-builder": "^4.0.13"
+    "fake-indexeddb": "^3.1.2"
   }
 }

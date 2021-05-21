@@ -1,4 +1,4 @@
-import {properties, toUpper} from "panda-parchment"
+import * as _ from "@dashkite/joy"
 import Events from "@dashkite/events"
 import {Capability, Confidential} from "./helpers"
 import Grants from "./grants"
@@ -13,24 +13,29 @@ class Profile
 
   @Confidential = Confidential
 
-  properties @,
-    all:
-      get: -> Store.run (db) -> db.getAll "profiles"
-    current:
-      get: ->
-        if (json = localStorage.getItem "current")?
-          {host, address} = JSON.parse json
-          Profile.load host, address
-      set: (profile) ->
-        {host, address} = profile
-        localStorage.setItem "current", JSON.stringify {host, address}
-    events:
-      get: -> @_events ?= Events.create()
+  _.mixin @, [
+    _.properties
+      current:
+        get: ->
+          if (json = localStorage.getItem "current")?
+            {host, address} = JSON.parse json
+            Profile.load host, address
+        set: (profile) ->
+          {host, address} = profile
+          localStorage.setItem "current", JSON.stringify {host, address}
 
-  properties @::,
-    publicKeys: get: ->
-      encryption: @keyPairs.encryption.publicKey.to "base64"
-      signature: @keyPairs.signature.publicKey.to "base64"
+    _.getters
+      all: -> Store.run (db) -> db.getAll "profiles"
+      events:-> @_events ?= Events.create()
+
+    ]
+
+  _.mixin @::, [
+    _.getters
+      publicKeys: ->
+        encryption: @keyPairs.encryption.publicKey.to "base64"
+        signature: @keyPairs.signature.publicKey.to "base64"
+  ]
 
   constructor: ({@host, @address, @data = {}, @keyPairs, @grants}) ->
     @address ?= @keyPairs.encryption.publicKey.to "base64"
@@ -74,14 +79,14 @@ class Profile
     ({path, parameters, method}) ->
       {directory} = @grants
       if (methods = lookup directory, path, parameters)?
-        methods[(toUpper method)]
+        methods[(_.toUpperCase method)]
 
   exercise: do ({directory, methods, contract, claim} = {}) ->
     ({path, parameters, method}) ->
       {directory} = @grants
       if (methods = lookup directory, path, parameters)?
-        method = toUpper method
-        if (contract = methods[(toUpper method)])?
+        method = _.toUpperCase method
+        if (contract = methods[(_.toUpperCase method)])?
           claim = exercise @keyPairs.signature, contract,
             template: parameters
             method: method

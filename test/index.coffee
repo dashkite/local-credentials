@@ -2,8 +2,8 @@ import assert from "assert"
 import {print, test, success} from "amen"
 
 import "fake-indexeddb/auto"
-import CustomEvent from "./custom-event"
-global.CustomEvent = CustomEvent
+# import CustomEvent from "./custom-event"
+# global.CustomEvent = CustomEvent
 
 import capability from "@dashkite/cobalt"
 import {Confidential, Capability} from "../src/helpers"

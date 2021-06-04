@@ -39,13 +39,13 @@
   "dependencies": {
     "@dashkite/cobalt": "^2.0.5",
     "@dashkite/events": "^0.1.0",
-    "@dashkite/joy": "^0.3.7",
+    "@dashkite/joy": "^0.3.9",
     "idb": "^6.1.2",
     "panda-confidential": "^3.0.2"
   },
   "devDependencies": {
     "@dashkite/genie": "^0.5.2",
-    "@dashkite/genie-presets": "^0.2.2",
+    "@dashkite/genie-presets": "^0.2.3",
     "@dashkite/masonry": "^0.11.5",
     "amen": "^3.0.0",
     "fake-indexeddb": "^3.1.2"

@@ -24,30 +24,33 @@
   ],
   "exports": {
     ".": {
-      "browser": "./build/browser/src/index.js"
+      "browser": "./build/browser/src/index.js",
+      "node": "./build/node/src/index.js"
     }
   },
+  "main": "build/node/src/index.js",
   "directories": {
     "test": "test"
   },
   "files": [
-    "build/browser/src"
+    "build/browser/src",
+    "build/node/src"
   ],
   "scripts": {
     "test": "genie test"
   },
   "dependencies": {
-    "@dashkite/cobalt": "^2.0.5",
+    "@dashkite/cobalt": "^2.1.0",
     "@dashkite/events": "^0.1.0",
-    "@dashkite/joy": "^0.3.9",
+    "@dashkite/joy": "^0.3.11",
     "idb": "^6.1.2",
-    "panda-confidential": "^3.0.2"
+    "panda-confidential": "^3.1.0"
   },
   "devDependencies": {
-    "@dashkite/genie": "^0.5.2",
-    "@dashkite/genie-presets": "^0.2.3",
-    "@dashkite/masonry": "^0.11.5",
+    "@dashkite/genie": "^0.5.4",
+    "@dashkite/genie-presets": "^0.4.12",
+    "@dashkite/masonry": "^0.11.11",
     "amen": "^3.0.0",
-    "fake-indexeddb": "^3.1.2"
+    "fake-indexeddb": "^3.1.3"
   }
 }

@@ -74,7 +74,6 @@ class Profile
     @grants.add directory
     @store()
 
-
   lookup: do ({directory, methods, contract, claim} = {}) ->
     ({path, parameters, method}) ->
       {directory} = @grants
@@ -130,7 +129,12 @@ class Profile
         encryption: EncryptionKeyPair.from "base64", keyPairs.encryption
         signature: SignatureKeyPair.from "base64", keyPairs.signature
 
-  @fromJSON: (json) -> @fromObject JSON.parse json
+  @fromJSON: (json) -> Profile.fromObject JSON.parse json
+
+  @createFromJSON: (json) ->
+    profile = @fromJSON json
+    await profile.store()
+    profile
 
   @toObject: (profile) -> profile.toObject()
 
@@ -148,19 +152,19 @@ class Profile
   @delete: (profile) -> profile.delete()
 
   @createAdjunct: (host, data, profile) ->
-    profile ?= await @current
+    profile ?= await Profile.current
     profile.createAdjunct host, data
 
   @getAdjunct: (host, profile) ->
-    profile ?= await @current
+    profile ?= await Profile.current
     profile?.getAdjunct host
 
-  @dispatch: (name, value) -> @events.dispatch name, value
+  @dispatch: (name, value) -> Profile.events.dispatch name, value
 
-  @on: (description) -> @events.on description
+  @on: (description) -> Profile.events.on description
 
   @receive: (profile, publicKey, ciphertext) ->
-    profile.add publicKey, ciphertext
+    profile.receive publicKey, ciphertext
 
   @lookup: (profile, request) -> profile.lookup request
 
